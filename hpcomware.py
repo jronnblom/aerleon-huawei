@@ -2,6 +2,7 @@ import datetime
 import itertools
 from aerleon.lib import aclgenerator
 from aerleon.lib import nacaddr
+from aerleon.lib import plugin
 from aerleon.lib import policy
 
 
@@ -131,3 +132,15 @@ class HPComware(aclgenerator.ACLGenerator):
             for term in terms:
                 acl.append(str(term))
         return "\n".join(acl)
+
+
+class HPComwarePlugin(plugin.BasePlugin):
+    def __init__(self):
+        pass
+
+    def RequestMetadata(self, _platformMetadata):
+        return plugin.PluginMetadata(capabilities=[plugin.PluginCapability.GENERATOR])
+
+    @property
+    def generators(self):
+        return {"hpcomware": HPComware}
