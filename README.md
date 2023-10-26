@@ -1,2 +1,4 @@
-# aerleon-hp-comware
-Aerleon Plugin for the HP switches running Comware.
+# aerleon-huawei
+Aerleon Plugin for the Huawei switches.
+
+based on https://github.com/aerleon/aerleon-hp-comware

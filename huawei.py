@@ -19,10 +19,10 @@ ANY_IP = nacaddr.IPv4("0.0.0.0/0", token="ANY")
 
 
 class Term(aclgenerator.Term):
-    """A single HP Comware ACL Term."""
+    """A single Huawei ACL Term."""
 
     def __init__(self, term: policy.Term):
-        """Converts an model policy into an HPComware policy."""
+        """Converts an model policy into an Huawei policy."""
         super().__init__(term)
         self.term = term
         if len(self.term.source_address) == 0:
@@ -70,6 +70,8 @@ class Term(aclgenerator.Term):
 
     @staticmethod
     def _PortStr(port, direction):
+        if port[0] == 0 and port[1] == 65535:
+            return ''
         port_str = [direction]
         if port[0] != port[1]:
             port_str.append(f"range {port[0]} {port[1]}")
@@ -79,11 +81,11 @@ class Term(aclgenerator.Term):
         return port_str
 
 
-class HPComware(aclgenerator.ACLGenerator):
+class Huawei(aclgenerator.ACLGenerator):
     """A HP Comware policy object."""
 
-    _PLATFORM = "hpcomware"
-    SUFFIX = ".hpc"
+    _PLATFORM = "huawei"
+    SUFFIX = ".hua"
     MAX_RULE_NUM = 65534
 
     def _TranslatePolicy(self, pol, exp_info):
@@ -134,7 +136,7 @@ class HPComware(aclgenerator.ACLGenerator):
         return "\n".join(acl)
 
 
-class HPComwarePlugin(plugin.BasePlugin):
+class HuaweiPlugin(plugin.BasePlugin):
     def __init__(self):
         pass
 
@@ -143,4 +145,4 @@ class HPComwarePlugin(plugin.BasePlugin):
 
     @property
     def generators(self):
-        return {"hpcomware": HPComware}
+        return {"huawei": Huawei}

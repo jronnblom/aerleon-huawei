@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "aerleon-hp-comware"
+name = "aerleon-huawei"
 version = "0.1.0"
 description = "Aerleon Generator for the HP switches running the Comware OS."
 authors = ["Rob Ankeny <ankenyr@gmail.com>"]
 license = "Apache"
 readme = "README.md"
-packages = [{include = "./hpcomware.py"}]
+packages = [{include = "./huawei.py"}]
 
 [tool.poetry.dependencies]
 python = "^3.7"
@@ -22,7 +22,7 @@ pre-commit = "^2.20.0"
 pytest = "^7.1.3"
 
 [tool.poetry.plugins."aerleon.plugin"]
-hpcomware = "hpcomware:HPComwarePlugin"
+hpcomware = "huawei:HuaweiPlugin"
 
 [build-system]
 requires = ["poetry-core"]
