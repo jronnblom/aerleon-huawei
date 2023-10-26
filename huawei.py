@@ -1,9 +1,9 @@
 import datetime
 import itertools
-from aerleon.lib import aclgenerator
-from aerleon.lib import nacaddr
-from aerleon.lib import plugin
-from aerleon.lib import policy
+from aerleon.lib import aclgenerator # type: ignore
+from aerleon.lib import nacaddr # type: ignore
+from aerleon.lib import plugin # type: ignore
+from aerleon.lib import policy # type: ignore
 
 
 class Error(Exception):
@@ -35,6 +35,8 @@ class Term(aclgenerator.Term):
             self.term.destination_port = [ANY_PORT]
         if "accept" in self.term.action:
             self.term.action = ["permit"]
+        elif "deny" in self.term.action:
+            self.term.action = ["deny"]
 
     def __str__(self):
         """Prints out a term as a string."""
@@ -47,7 +49,7 @@ class Term(aclgenerator.Term):
             self.term.protocol,
         )
         for src_ip, src_port, dst_ip, dst_port, proto in rules:
-            rule_str = ["acl", self.term.action[0], proto]
+            rule_str = [self.term.action[0], proto]
             rule_str.extend(self._AddressStr(src_ip, "source"))
             rule_str.extend(self._PortStr(src_port, "source-port"))
             rule_str.extend(self._AddressStr(dst_ip, "destination"))
@@ -63,7 +65,7 @@ class Term(aclgenerator.Term):
         else:
             addr_str.append(str(addr.network_address))
             if addr.prefixlen == 32:
-                addr_str.append("0")
+                addr_str.append("32")
             else:
                 addr_str.append(str(addr.netmask))
         return addr_str
@@ -82,11 +84,11 @@ class Term(aclgenerator.Term):
 
 
 class Huawei(aclgenerator.ACLGenerator):
-    """A HP Comware policy object."""
+    """A Huawei policy object."""
 
     _PLATFORM = "huawei"
     SUFFIX = ".hua"
-    MAX_RULE_NUM = 65534
+    MAX_RULE_NUM = 4294967294
 
     def _TranslatePolicy(self, pol, exp_info):
         self.policies = []
@@ -97,16 +99,12 @@ class Huawei(aclgenerator.ACLGenerator):
                 continue
             header.filter_options = header.FilterOptions(self._PLATFORM)
             header.filter_name = header.FilterName(self._PLATFORM)
-            if len(header.filter_name) > 63:
+            if len(header.filter_name) > 127:
                 raise FilterNameLengthError(
-                    f"Filter name cannot exceed 63 characters, filter name is {len(header.filter_name)} characters"
+                    f"Filter name cannot exceed 127 characters, filter name is {len(header.filter_name)} characters"
                 )
-            header.filter_type = "advanced"
-            if "config" in header.filter_options:
-                header.match_order = "config"
-            else:
-                header.match_order = "auto"
-            header.step_increment = 1
+            header.filter_type = "advance"
+            header.step_increment = 10
             header.comment = "".join(header.comment)
             if len(header.comment) > 127:
                 header.comment = header.comment[:127]
@@ -117,13 +115,12 @@ class Huawei(aclgenerator.ACLGenerator):
             self.policies.append((header, hp_terms))
 
     @staticmethod
-    def _HeaderStr(header):
-        acl_header = f"acl {header.filter_type}"
+    def _HeaderStr(header):        
+        acl_header = ''
         if header.filter_name.isdigit():
-            acl_header = f"{acl_header} {header.filter_name}"
+            acl_header = f"undo acl {header.filter_name}\nacl {header.filter_name}"
         else:
-            acl_header = f"{acl_header} name {header.filter_name}"
-        acl_header = f"{acl_header} match-order {header.match_order}"
+            acl_header = f"undo acl name {header.filter_name}\nacl name {header.filter_name} {header.filter_type}"
         acl_header = f"{acl_header}\ndescription {header.comment}\nstep {header.step_increment}"
         return acl_header
 
