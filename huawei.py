@@ -65,7 +65,7 @@ class Term(aclgenerator.Term):
         else:
             addr_str.append(str(addr.network_address))
             if addr.prefixlen == 32:
-                addr_str.append("32")
+                addr_str.append("255.255.255.255")
             else:
                 addr_str.append(str(addr.netmask))
         return addr_str
